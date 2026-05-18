@@ -5,8 +5,9 @@ Handle user management endpoints
 
 from flask import request, jsonify
 from routes import api_bp
-from models import User
+from models import SetupUser as User, SysAuditLog, db
 from utils import validate_json, get_current_user, require_auth
+from datetime import datetime
 
 @api_bp.route('/users', methods=['GET'])
 @require_auth
@@ -20,7 +21,7 @@ def get_users():
     if not current_user.is_admin:
         return jsonify({'error': 'Admin access required'}), 403
     
-    pagination = User.query.paginate(page=page, per_page=per_page)
+    pagination = User.query.filter_by(is_deleted=False).paginate(page=page, per_page=per_page)
     
     return jsonify({
         'users': [user.to_dict() for user in pagination.items],
@@ -40,14 +41,19 @@ def get_user(user_id):
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
     
-    user = User.query.get_or_404(user_id)
+    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
     return jsonify(user.to_dict()), 200
 
 
 @api_bp.route('/users', methods=['POST'])
 @validate_json(required_fields=['username', 'email', 'password'])
+@require_auth
 def create_user():
-    """Register a new user"""
+    """Register a new user (Admin only)"""
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
+
     data = request.get_json()
     
     # Check if username or email already exists
@@ -64,8 +70,18 @@ def create_user():
         role=data.get('role', 'user')
     )
     user.set_password(data['password'])
-    
     user.save()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='staff_management',
+        action='create_staff',
+        target_table='setup_user',
+        target_id=user.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'username': user.username, 'role': user.role}
+    )
     
     return jsonify({
         'message': 'User created successfully',
@@ -83,7 +99,7 @@ def update_user(user_id):
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
     
-    user = User.query.get_or_404(user_id)
+    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
     data = request.get_json()
     
     # Fields that users can update
@@ -109,6 +125,17 @@ def update_user(user_id):
     
     user.save()
     
+    # Log the action
+    SysAuditLog.log(
+        category='staff_management',
+        action='edit_staff',
+        target_table='setup_user',
+        target_id=user.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'updated_fields': list(data.keys())}
+    )
+    
     return jsonify({
         'message': 'User updated successfully',
         'user': user.to_dict()
@@ -118,14 +145,30 @@ def update_user(user_id):
 @api_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @require_auth
 def delete_user(user_id):
-    """Delete a user (admin only)"""
+    """Soft delete user"""
     current_user = get_current_user()
     
     if not current_user.is_admin:
         return jsonify({'error': 'Admin access required'}), 403
+        
+    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
     
-    user = User.query.get_or_404(user_id)
-    user.delete()
+    # Soft delete
+    user.is_deleted = True
+    user.deleted_at = datetime.utcnow()
+    user.is_active = False
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='staff_management',
+        action='delete_staff',
+        target_table='setup_user',
+        target_id=user.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'username': user.username}
+    )
     
     return jsonify({'message': 'User deleted successfully'}), 200
 
@@ -146,8 +189,8 @@ def get_user_reports():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
-    from models import Report
-    pagination = Report.query.filter_by(created_by=current_user.id)\
+    from models import LedgerReportHeader as Report
+    pagination = Report.query.filter_by(created_by=current_user.id, is_deleted=False)\
         .order_by(Report.created_at.desc())\
         .paginate(page=page, per_page=per_page)
     

@@ -1,0 +1,170 @@
+Republic of the Philippines 
+Professional Regulation Commission 
+Manila 
+ 
+ 
+PRC Building, Paredes St., Sampaloc 
+Manila, 1008 Philippines 
+Philippine International Convention Center 
+Sotto St., Pasay City, 1307 Philippines 
+www.prc.gov.ph 
+ 
+PRC DATA PRIVACY NOTICE 
+ 
+PRIVACY STATEMENT 
+ 
+The Professional Regulation Commission (PRC) is committed to protecting your privacy 
+and ensuring that all personal data collected are processed in accordance with the Data 
+Privacy Act of 2012  (Republic Act No. 10173), and pertinent issuances of the National 
+Privacy Commission.  
+ 
+We shall provide specific information on how personal data are processed, and post 
+separate privacy notices in appropriate formats whenever we collect personal data online 
+through our transactional websites (i.e. LERIS, CPDAS, ACOAS, and CRMS) , and 
+manually through on-site transactions in PRC offices and offsite service centers.  
+ 
+The PRC  assures the public that processing personal data will strictly follow the 
+provisions of  DPA, especially the general data privacy principles of Transparency, 
+Legitimate Purpose, and Proportionality. 
+ 
+PRC PRIVACY NOTICE 
+ 
+The Privacy Notice is made available in the physical offices and offsite service centers 
+and in the static and transactional websites of the PRC.These functionalities enable the 
+PRC to collect and process your personal information. 
+ 
+1. DATA COLLECTED AND METHODS/MODES OF COLLECTION: The PRC collects 
+personal information either manually or electronically.  
+ 
+a) For online transactions, the following data are collected through direct encoding by 
+the applicant or an authorized representative:  information in the PRC transactional 
+websites (i.e. LERIS, CPDAS, ACOAS, and CRMS). 
+ 
+ LERIS: Basic personal information like your complete name, date of birth, 
+gender, civil status, photograph, specimen signatures 
+ ACOAS: Name/company name, email 
+ CRMS: Name, license number, birthdate, gender, profession, and employment 
+ CPDAS: Complete name, gender,  civil status, license number, profession, 
+birthdate, address, email address, mobile/telephone number, and company name 
+ 
+b) For manual collection, printed forms/documents are made available and are 
+accomplished by the data subjects or their authorized representative/s. Details of 
+specific information on personal information collected are made available on the 
+face of the forms provided. 
+ 
+c) Methods Utilized For Automated Access 
+The PRC uses Google Analytics, a third -party service, to analyze our web traffic 
+data, help us determine our website's engagement, and improve our website 
+services and features. This service uses cookies. Data generated is not shared with 
+any other party. 
+ 
+The following web traffic data are processed for this purpose: 
+ Your IP address 
+ The pages and internal links accessed on our site 
+ The date and time you visited the site 
+ Geolocation 
+ The referring site or platform (if any) through which you accessed this site 
+ Your operating system 
+ Web browser type 
+ 
+2. PURPOSE OF COLLECTION AND USE OF DATA COLLECTED: The PRC collects, 
+uses, and stores personal information for the following purposes: 
+ 
+a. To perform its mandate relative to the regulation and licensing of the various 
+professions under its jurisdiction 
+b. To provide better service and give the transacting public proper response/feedback 
+c. To be able to provide the appropriate action that a data subject may require 
+concerning their data privacy rights. 
+ 
+The PRC may use your c ontact information in order to send an e -mail and/or other 
+communications regarding your status or updates about your transaction/s with us. We 
+may also use your data for statistics, summaries, research and studies for the 
+development of new markets and st andards. The PRC will only retain personal data 
+as long as it is utilized for its intended purpose. 
+ 
+3. DISCLOSURE OF PERSONAL DATA: The PRC only shares your information if 
+required and allowed by law, in accordance with Sections 12 or 13 of the Data Privacy 
+Act. PRC ensures that Data Sharing Agreements (DSAs) compliant with NPC 
+requirements for data sharing are executed to ensure protection of personal data 
+shared with third parties.  
+ 
+4. DATA PROTECTION AND SECURITY MEASURES: The PRC protects personal data 
+collected by instituting protection measures aimed at minimizing the risks involved in 
+data processing. It implements technical, organizational and physical security 
+measures to protect your personal data against data breach, unauthorized or 
+accidental access or disclosure, alteration or destruction.  
+ 
+● The Technical Measures include, among others: deployment and installation of 
+firewalls, load balancer, file encryption, intrusion detection/prevention systems 
+(IDS/IPS), conduct of vulnerability assessment and penetration testing, access 
+controls, and data backup. 
+ 
+● The Physical Security Measures  include, among others: Design of office 
+space/work station (computers are positioned with considerable spaces between 
+them to maintain privacy and protect the processing of personal data); Access 
+procedure of agency personnel (only authorized personnel shall be allowed inside 
+rooms where data are stored);  
+ 
+● The Organizational Measures  include, among others: Data Minimization (only 
+collect and processes personal information necessary for the specified purposes); 
+Data Retention Policies (only retain personal data in electronic format, and only for 
+as long as it is utilized for its intended purpose); Privacy Training for Employees; 
+Appointment of DPO and reconstitution of Data Privacy Committee. 
+ 
+5. STORAGE, RETENTION, AND DISPOSAL:  
+ 
+The PRC ensures that personal data under its custody are protected against any 
+accidental or unlawful destruction, alteration and disclosure as well as against any 
+other unlawful processing. The PRC implements a ppropriate security measures in 
+storing collected personal information, depending on the nature of the information. 
+ 
+Personal Information manually collected (paper-based documents) are kept in secure 
+locations/filing cabinets/boxes in locked rooms, accessible only to authorized 
+personnel. Digital/electronic files are stored in computers and servers/clouds protected 
+by passwords and accessible to a limited number of authorized and trained personnel.  
+ 
+ 
+Data Retention Periods and Disposal are observed and conducted in accordance with 
+policies/practices compliant with NAP (National Archives of the Philippines) guidelines 
+and other applicable rules/issuances.  Copies of NAP policy observed by PRC 
+pertaining to data/documents retention and disposal may be accessed through 
+clicking HERE. 
+ 
+6. RIGHTS OF DATA SUBJECTS: Under the Data Privacy Act and related issuances, 
+data subjects are entitled to the following rights: 
+ 
+a. The Right To Be Informed 
+b. The Right To Access 
+c. The Right To Object 
+d. The Right To Erasure or Blocking 
+e. The Right To Damages 
+f. The Right To File A Complaint Before the PRC 
+g. The Right To Rectification 
+h. The Right To Data Portability 
+ 
+You may file a claim for compensation if you believe that you suffered damages due to 
+inaccurate, incomplete, outdated, false, unlawfully obtained, or unauthorized use of 
+personal data or for violating your rights and freedoms as a data subject.  
+ 
+In case you think that your personal information has been misused, maliciously 
+disclosed, or improperly disposed of or that your data privacy rights have been violated, 
+you have a right to submit a complaint with the PRC , addressed to the PRC Da ta 
+Protection Officer  through the PRC CRMS  accessible through this link:  
+https://crms.prc.gov.ph. 
+ 
+7. CHANGES TO THE PRIVACY NOTICE  
+ 
+PRC reserves the right to update or revise this privacy notice at any time and will 
+provide a new privacy notice whenever there are substantial changes. Prior versions 
+of the privacy notice shall be retained by the PRC and shall be provided to data 
+subjects upon request. 
+ 
+8. DATA PROTECTION OFFICER CONTACT INFORMATION: Any questions, 
+complaints, or other concerns regarding data privacy may be submitted through the 
+PRC CRMS link provided in number 6 above. The PRC DPO may also be reached 
+through the email address and contact number listed below.  
+ 
+Assistant Commissioner Lord Louis P. Valera 
+PRC Data Protection Officer 
+Email Address:  dataprotection.officer@prc.gov.ph 
+Contact Number:  (02) 8736-4880 
