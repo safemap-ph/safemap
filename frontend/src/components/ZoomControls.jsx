@@ -1,60 +1,46 @@
-import { Plus, Minus } from 'lucide-react'
-import { useMap } from 'react-leaflet'
-import myLocationImg from '/src/assets/images/My_location.svg'
-import cityCentralImg from '/src/assets/images/City_central_button.svg'
+import { Plus, Minus, Locate, Home } from "lucide-react"
+import { useMap } from "@/components/ui/map"
 
 function ZoomControls() {
-  const map = useMap()
-  
-  const handleZoomIn = () => {
-    map.zoomIn()
-  }
-  
-  const handleZoomOut = () => {
-    map.zoomOut()
-  }
-  
-  const handleLocation = () => {
-    map.setView([6.1167, 125.1667], 13)
-  }
-  
+  const { map } = useMap()
+
+  const handleZoomIn = () => map?.zoomTo(map.getZoom() + 1, { duration: 200 })
+  const handleZoomOut = () => map?.zoomTo(map.getZoom() - 1, { duration: 200 })
+
   const handleCityCentral = () => {
-    map.setView([6.1167, 125.1667], 12)
+    map?.flyTo({ center: [125.1667, 6.1167], zoom: 13, duration: 800 })
   }
 
+  const handleLocation = () => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        map?.flyTo({ center: [coords.longitude, coords.latitude], zoom: 15, duration: 1000 })
+      },
+      () => alert("Unable to get your location. Please enable location services.")
+    )
+  }
+
+  const btn =
+    "w-12 h-12 rounded-[10px] bg-white shadow-md flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all"
+
   return (
-    <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
-      {/* City Central */}
-      <button
-        className="w-12 h-12 p-3 rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.00)] flex items-center justify-center"
-        style={{ backgroundColor: '#ffffff' }}
-        onClick={handleCityCentral}
-      >
-        <img src={cityCentralImg} alt="City Central" className="w-6 h-6" />
+    <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+      <button className={btn} onClick={handleCityCentral} title="City Center">
+        <Home className="w-5 h-5 text-[#1f295b]" />
       </button>
-      {/* Zoom In */}
-      <button
-        className="w-12 h-12 p-3 rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.00)] flex items-center justify-center"
-        style={{ backgroundColor: '#ffffff' }}
-        onClick={handleZoomIn}
-      >
-        <Plus className="w-6 h-6 text-black" />
+      <button className={btn} onClick={handleZoomIn} title="Zoom In">
+        <Plus className="w-5 h-5 text-black" />
       </button>
-      {/* Zoom Out */}
-      <button
-        className="w-12 h-12 p-3 rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.00)] flex items-center justify-center"
-        style={{ backgroundColor: '#ffffff' }}
-        onClick={handleZoomOut}
-      >
-        <Minus className="w-6 h-6 text-black" />
+      <button className={btn} onClick={handleZoomOut} title="Zoom Out">
+        <Minus className="w-5 h-5 text-black" />
       </button>
-      {/* My Location */}
       <button
-        className="w-12 h-12 p-3 rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.00)] flex items-center justify-center"
-        style={{ backgroundColor: '#2563eb' }}
+        className="w-12 h-12 rounded-[10px] bg-blue-600 shadow-md flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
         onClick={handleLocation}
+        title="My Location"
       >
-        <img src={myLocationImg} alt="My Location" className="w-6 h-6" />
+        <Locate className="w-5 h-5 text-white" />
       </button>
     </div>
   )

@@ -1,0 +1,16 @@
+.git/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/instance/
+backend/migrations/
+**/*.min.*
+**/*.map
+**/*.lock
+**/*.log
+**/dist/
+**/build/
+**/coverage/
+**/.venv/
+**/venv/
+**/__pycache__/

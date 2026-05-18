@@ -5,8 +5,10 @@ Emergency hotlines, contacts, and safety resources
 
 from flask import request, jsonify
 from routes import api_bp
-from models import HelpCategory, HelpContact
+from models import RefHelpCategory as HelpCategory, RefHelpContact as HelpContact, SysAuditLog, db
 from utils import require_auth, get_current_user, validate_json
+from flask import request, jsonify
+from datetime import datetime
 
 # Default emergency contacts for seeding
 DEFAULT_CONTACTS = [
@@ -35,7 +37,7 @@ DEFAULT_CONTACTS = [
 @api_bp.route('/help/categories', methods=['GET'])
 def get_help_categories():
     """Get all help categories"""
-    categories = HelpCategory.query.filter_by(is_active=True)\
+    categories = HelpCategory.query.filter_by(is_active=True, is_deleted=False)\
         .order_by(HelpCategory.display_order).all()
     
     return jsonify({
@@ -49,19 +51,43 @@ def get_all_contacts():
     category = request.args.get('category')
     
     if category:
-        contacts = HelpContact.get_by_category(category)
+        # For simplicity, we filter in code here if model doesn't have a clean query method
+        category_obj = HelpCategory.query.filter_by(name=category, is_deleted=False).first()
+        if category_obj:
+            contacts = HelpContact.query.filter_by(category_id=category_obj.id, is_active=True, is_deleted=False).all()
+        else:
+            contacts = []
     else:
-        contacts = HelpContact.get_all_active()
+        contacts = HelpContact.query.filter_by(is_active=True, is_deleted=False).all()
     
     return jsonify({
         'contacts': [c.to_dict() for c in contacts]
     }), 200
 
 
+@api_bp.route('/help/emergency', methods=['GET'])
+def get_emergency_contacts():
+    """Get all emergency contacts (alias for /help/contacts with different response key)"""
+    category = request.args.get('category')
+    
+    if category:
+        category_obj = HelpCategory.query.filter_by(name=category, is_deleted=False).first()
+        if category_obj:
+            contacts = HelpContact.query.filter_by(category_id=category_obj.id, is_active=True, is_deleted=False).all()
+        else:
+            contacts = []
+    else:
+        contacts = HelpContact.query.filter_by(is_active=True, is_deleted=False).all()
+    
+    return jsonify({
+        'emergency_contacts': [c.to_dict() for c in contacts]
+    }), 200
+
+
 @api_bp.route('/help/contacts/<int:contact_id>', methods=['GET'])
 def get_contact(contact_id):
     """Get a single contact"""
-    contact = HelpContact.query.get_or_404(contact_id)
+    contact = HelpContact.query.filter_by(id=contact_id, is_deleted=False).first_or_404()
     return jsonify(contact.to_dict()), 200
 
 
@@ -80,7 +106,8 @@ def create_contact():
     category = HelpCategory.query.filter_by(name=category_name).first()
     if not category:
         category = HelpCategory(name=category_name, description=data.get('category_label', category_name))
-        category.save()
+        db.session.add(category)
+        db.session.commit()
     
     contact = HelpContact(
         category_id=category.id,
@@ -98,7 +125,19 @@ def create_contact():
         created_by=current_user.id
     )
     
-    contact.save()
+    db.session.add(contact)
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='emergency_contact',
+        action='add_contact',
+        target_table='ref_help_contact',
+        target_id=contact.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': contact.name, 'category': contact.category.name if contact.category else None}
+    )
     
     return jsonify({
         'message': 'Contact created successfully',
@@ -114,7 +153,7 @@ def update_contact(contact_id):
     if current_user.role not in ['admin', 'moderator']:
         return jsonify({'error': 'Unauthorized'}), 403
     
-    contact = HelpContact.query.get_or_404(contact_id)
+    contact = HelpContact.query.filter_by(id=contact_id, is_deleted=False).first_or_404()
     data = request.get_json()
     
     # Update fields
@@ -130,7 +169,18 @@ def update_contact(contact_id):
         if category:
             contact.category_id = category.id
     
-    contact.save()
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='emergency_contact',
+        action='edit_contact',
+        target_table='ref_help_contact',
+        target_id=contact.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': contact.name}
+    )
     
     return jsonify({
         'message': 'Contact updated successfully',
@@ -141,82 +191,28 @@ def update_contact(contact_id):
 @api_bp.route('/help/contacts/<int:contact_id>', methods=['DELETE'])
 @require_auth
 def delete_contact(contact_id):
-    """Delete contact (admin only)"""
+    """Soft delete contact (admin only)"""
     current_user = get_current_user()
     if current_user.role not in ['admin', 'moderator']:
         return jsonify({'error': 'Unauthorized'}), 403
     
-    contact = HelpContact.query.get_or_404(contact_id)
-    contact.delete()
+    contact = HelpContact.query.filter_by(id=contact_id, is_deleted=False).first_or_404()
+    
+    # Soft delete
+    contact.is_deleted = True
+    contact.deleted_at = datetime.utcnow()
+    contact.is_active = False
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='emergency_contact',
+        action='delete_contact',
+        target_table='ref_help_contact',
+        target_id=contact.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': contact.name}
+    )
     
     return jsonify({'message': 'Contact deleted successfully'}), 200
-
-
-@api_bp.route('/help/search', methods=['GET'])
-def search_help():
-    """Search help contacts"""
-    query = request.args.get('q', '')
-    
-    if len(query) < 2:
-        return jsonify({'error': 'Query too short'}), 400
-    
-    contacts = HelpContact.search(query)
-    
-    return jsonify({
-        'query': query,
-        'contacts': [c.to_dict() for c in contacts]
-    }), 200
-
-
-@api_bp.route('/help/emergency', methods=['GET'])
-def get_emergency_contacts():
-    """Get key emergency contacts for quick access"""
-    key_categories = ['pnp', 'emergency', 'medical', 'fire', 'vawc']
-    
-    contacts = []
-    for cat in key_categories:
-        cat_contacts = HelpContact.get_by_category(cat)
-        contacts.extend(cat_contacts)
-    
-    return jsonify({
-        'emergency_contacts': [c.to_dict() for c in contacts]
-    }), 200
-
-
-@api_bp.route('/help/seed', methods=['POST'])
-@require_auth
-def seed_default_contacts():
-    """Seed default emergency contacts (first time setup)"""
-    current_user = get_current_user()
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Admin access required'}), 403
-    
-    # Create categories
-    for cat in HelpContact.CATEGORIES:
-        existing = HelpCategory.query.filter_by(name=cat['name']).first()
-        if not existing:
-            category = HelpCategory(
-                name=cat['name'],
-                description=cat['label'],
-                icon=cat['icon']
-            )
-            category.save()
-    
-    # Create default contacts
-    for contact_data in DEFAULT_CONTACTS:
-        existing = HelpContact.query.filter_by(name=contact_data['name']).first()
-        if not existing:
-            category = HelpCategory.query.filter_by(name=contact_data['category']).first()
-            if category:
-                contact = HelpContact(
-                    category_id=category.id,
-                    name=contact_data['name'],
-                    description=contact_data.get('description'),
-                    phone=contact_data.get('phone'),
-                    is_24_7=contact_data.get('is_24_7', False),
-                    is_verified=True,
-                    created_by=current_user.id
-                )
-                contact.save()
-    
-    return jsonify({'message': 'Default contacts seeded successfully'}), 201
