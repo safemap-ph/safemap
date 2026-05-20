@@ -1,15 +1,30 @@
 """
 SafeMap-PH Models Package
-Database models using SQLAlchemy
+Database models using SQLAlchemy - Refactored with setup_, ref_, ledger_, sys_ prefixes
 """
 
-# Import db from app - this avoids the multiple instance issue
-from app import db
+# Import db from extensions
+from extensions import db
 
-# Import models
-from models.user import User
-from models.report import Report
-from models.location import Location
-from models.help import HelpCategory, HelpContact
+# Import models using new naming convention
+from models.setup_user import SetupUser
+from models.ledger_report import LedgerReportHeader, LedgerReportEntry, DecryptionError
+from models.setup_location import SetupLocation
+from models.report_queue import ReportQueue
+from models.ref_emergency import RefHelpCategory, RefHelpContact
+from models.setup_report_category import SetupReportCategory
+from models.sys_audit import SysAuditLog
 
-__all__ = ['db', 'User', 'Report', 'Location', 'HelpCategory', 'HelpContact']
+__all__ = [
+    'db',
+    'SetupUser',
+    'LedgerReportHeader',
+    'LedgerReportEntry',
+    'DecryptionError',
+    'SetupLocation',
+    'ReportQueue',
+    'RefHelpCategory',
+    'RefHelpContact',
+    'SetupReportCategory',
+    'SysAuditLog',
+]

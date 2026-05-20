@@ -1,0 +1,45 @@
+name: CI
+
+on:
+    push:
+        branches: [submain]
+    pull_request:
+        branches: [submain]
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    lint-build:
+        name: Lint → Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        defaults:
+            run:
+                working-directory: frontend
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Enable corepack
+              run: corepack enable
+
+            - name: Set pnpm version
+              run: corepack prepare pnpm@10.33.0 --activate
+
+            - name: Install dependencies
+              run: pnpm install --no-frozen-lockfile
+
+            - name: Lint
+              run: pnpm lint
+
+            - name: Build
+              run: pnpm build

@@ -1,21 +1,21 @@
-import { useNavigate } from 'react-router-dom'
-import reportAnonQAImg from '/src/assets/images/QA_report.svg'
-import aiAsstQAImg from '/src/assets/images/QA_AI.svg'
-import emergencyQAImg from '/src/assets/images/QA_emergency.svg'
+import { useNavigate } from "react-router-dom"
+import reportAnonQAImg from "/src/assets/images/QA_report.svg"
+import aiAsstQAImg from "/src/assets/images/QA_AI.svg"
+import emergencyQAImg from "/src/assets/images/QA_emergency.svg"
 
-function QuickActions({ 
-  showQuickActions, 
-  setShowQuickActions, 
-  qaPosition, 
+function QuickActions({
+  showQuickActions,
+  setShowQuickActions,
+  qaPosition,
   setQaPosition,
-  isDraggingQA, 
+  isDraggingQA,
   setIsDraggingQA,
-  dragOffset, 
+  dragOffset,
   setDragOffset,
-  dragStartPos, 
+  dragStartPos,
   setDragStartPos,
   onEmergencyClick,
-  onAIChatClick
+  onAIChatClick,
 }) {
   const navigate = useNavigate()
 
@@ -31,14 +31,14 @@ function QuickActions({
     if (!isDraggingQA) return
     const clientX = e.touches ? e.touches[0].clientX : e.clientX
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    
+
     const deltaX = clientX - dragOffset.x
     const deltaY = clientY - dragOffset.y
-    
+
     // Update position - can move freely in any direction
-    setQaPosition(prev => ({
+    setQaPosition((prev) => ({
       x: prev.x + deltaX,
-      y: prev.y + deltaY
+      y: prev.y + deltaY,
     }))
     setDragOffset({ x: clientX, y: clientY })
   }
@@ -53,9 +53,12 @@ function QuickActions({
   if (!showQuickActions) {
     return (
       <button
-        className="fixed z-[1001] flex flex-col items-center gap-1 bg-white px-4 py-2 rounded-full shadow-lg"
-        style={{ left: '50%', bottom: '90px', transform: 'translateX(-50%)' }}
-        onClick={() => { setShowQuickActions(true); setQaPosition({ x: 0, y: 0 }); }}
+        className="fixed z-1001 flex flex-col items-center gap-1 bg-white px-4 py-2 rounded-full shadow-lg"
+        style={{ left: "50%", bottom: "90px", transform: "translateX(-50%)" }}
+        onClick={() => {
+          setShowQuickActions(true)
+          setQaPosition({ x: 0, y: 0 })
+        }}
       >
         <span className="text-xs text-gray-600 font-medium">Show Quick Actions</span>
       </button>
@@ -63,13 +66,13 @@ function QuickActions({
   }
 
   return (
-    <div 
-      className="fixed z-[1000] w-[90%] max-w-sm touch-none cursor-grab active:cursor-grabbing quick-actions-mobile"
+    <div
+      className="fixed z-1000 w-[90%] max-w-sm touch-none cursor-grab active:cursor-grabbing quick-actions-mobile"
       tabIndex={-1}
       onKeyDown={(e) => e.preventDefault()}
-      style={{ 
-        left: `calc(40% + ${qaPosition.x}px)`, 
-        bottom: `calc(90px + ${-qaPosition.y}px)`
+      style={{
+        left: `calc(40% + ${qaPosition.x}px)`,
+        bottom: `calc(90px + ${-qaPosition.y}px)`,
       }}
       onMouseDown={handleQADragStart}
       onMouseMove={handleQADragMove}
@@ -81,11 +84,11 @@ function QuickActions({
     >
       <div className="bg-white rounded-[20px] shadow-[0px_-4px_20px_0px_rgba(0,0,0,0.08)] overflow-hidden">
         {/* Drag Handle */}
-        <div 
-          className="w-10 h-1 mx-auto mt-4 bg-gray-300 rounded-sm cursor-pointer" 
-          onClick={() => setShowQuickActions(false)} 
-          tabIndex={-1} 
-          onKeyDown={(e) => e.preventDefault()} 
+        <div
+          className="w-10 h-1 mx-auto mt-4 bg-gray-300 rounded-sm cursor-pointer"
+          onClick={() => setShowQuickActions(false)}
+          tabIndex={-1}
+          onKeyDown={(e) => e.preventDefault()}
         />
         <div className="px-5 pt-2 pb-3">
           <div className="flex justify-between items-center mb-3">
@@ -96,13 +99,15 @@ function QuickActions({
             </div>
           </div>
           <div className="flex justify-around">
-            {/* Report Anon */}
-            <button className="flex flex-col items-center gap-2" onClick={() => navigate('/report')}>
+            {/* Track Report */}
+            <button className="flex flex-col items-center gap-2" onClick={() => navigate("/track")}>
               <div className="w-24 h-24 px-2.5 py-3 bg-white rounded-2xl flex flex-col justify-start items-center gap-2.5">
                 <div className="w-10 h-10 p-2 bg-blue-50 rounded-[20px] flex items-center justify-center">
-                  <img src={reportAnonQAImg} alt="Report" className="w-8 h-8" />
+                  <img src={reportAnonQAImg} alt="Track" className="w-8 h-8" />
                 </div>
-                <span className="text-neutral-600 text-xs font-semibold font-['DM_Sans'] tracking-tight">Report Anon</span>
+                <span className="text-neutral-600 text-xs font-semibold font-['DM_Sans'] tracking-tight">
+                  Track Report
+                </span>
               </div>
             </button>
             {/* Emergency */}
@@ -120,7 +125,9 @@ function QuickActions({
                 <div className="w-10 h-10 p-2 bg-blue-50 rounded-[20px] flex items-center justify-center">
                   <img src={aiAsstQAImg} alt="AI" className="w-8 h-8" />
                 </div>
-                <span className="text-neutral-600 text-xs font-semibold font-['DM_Sans'] tracking-tight">AI Assistant</span>
+                <span className="text-neutral-600 text-xs font-semibold font-['DM_Sans'] tracking-tight">
+                  AI Assistant
+                </span>
               </div>
             </button>
           </div>
