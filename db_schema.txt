@@ -1,0 +1,146 @@
+SafeMap-PH database schema (from SQLAlchemy models)
+
+Table: setup_user
+- id: Integer, PK
+- username: String(80), unique, not null, indexed
+- email: String(120), unique, not null, indexed
+- password_hash: String(256), not null
+- full_name: String(120)
+- phone: String(20)
+- profile_image: String(256)
+- role: String(20), default 'user'
+- is_active: Boolean, default true
+- is_verified: Boolean, default false
+- is_admin: Boolean, default false
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_at: DateTime, default utcnow
+- updated_at: DateTime, default utcnow, on update
+- last_login: DateTime
+
+Table: ledger_report_header
+- id: Integer, PK
+- title: String(200), not null
+- description: Text, not null (encrypted at rest)
+- category: String(50), not null, indexed
+- status: String(30), default 'pending_review', indexed
+- severity: String(20), default 'medium'
+- latitude: Float, not null
+- longitude: Float, not null
+- city: String(100), indexed
+- barangay: String(100)
+- address: String(256)
+- reference_code: String(20), unique, indexed
+- is_anonymous: Boolean, default true
+- user_ip: String(45)
+- user_agent: String(256)
+- is_pnp_verified: Boolean, default false
+- pnp_case_number: String(50)
+- created_by: Integer, FK -> setup_user.id
+- image_url: String(256)
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_at: DateTime, default utcnow, indexed
+- updated_at: DateTime, default utcnow, on update
+
+Table: ledger_report_entry
+- id: Integer, PK
+- report_header_id: Integer, FK -> ledger_report_header.id, not null
+- action: String(50), not null
+- status_to: String(30), not null
+- actor_id: Integer, FK -> setup_user.id
+- notes: Text
+- created_at: DateTime, default utcnow
+
+Table: queue
+- id: Integer, PK
+- report_header_id: Integer, FK -> ledger_report_header.id, unique, not null
+- status: String(30), default 'pending_review', indexed
+- priority: String(20), default 'medium'
+- assigned_to: Integer, FK -> setup_user.id
+- notes: Text
+- queued_at: DateTime, default utcnow, indexed
+- updated_at: DateTime, default utcnow, on update
+
+Table: setup_location
+- id: Integer, PK
+- name: String(200), not null
+- description: Text
+- location_type: String(50), not null, indexed
+- latitude: Float, not null
+- longitude: Float, not null
+- address: String(256)
+- city: String(100), indexed
+- barangay: String(100)
+- facilities: JSON
+- operating_hours: String(100)
+- contact_info: JSON
+- website: String(256)
+- safety_rating: Float
+- safety_score: Integer
+- is_verified: Boolean, default false
+- verified_by: Integer, FK -> setup_user.id
+- verified_at: DateTime
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_at: DateTime, default utcnow
+- updated_at: DateTime, default utcnow, on update
+
+Table: ref_help_category
+- id: Integer, PK
+- name: String(50), unique, not null
+- description: String(200)
+- icon: String(50)
+- display_order: Integer, default 0
+- is_active: Boolean, default true
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_at: DateTime, default utcnow
+- updated_at: DateTime, default utcnow, on update
+
+Table: ref_help_contact
+- id: Integer, PK
+- category_id: Integer, FK -> ref_help_category.id
+- name: String(100), not null
+- description: String(256)
+- phone: String(50)
+- phone_alt: String(50)
+- email: String(120)
+- website: String(256)
+- address: String(256)
+- latitude: Float
+- longitude: Float
+- operating_hours: String(100)
+- is_24_7: Boolean, default false
+- is_active: Boolean, default true
+- is_verified: Boolean, default false
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_by: Integer, FK -> setup_user.id
+- created_at: DateTime, default utcnow
+- updated_at: DateTime, default utcnow, on update
+
+Table: setup_report_category
+- id: Integer, PK
+- name: String(50), unique, not null
+- label: String(100), not null
+- description: String(256)
+- icon: String(50)
+- priority: String(20), default 'medium'
+- is_active: Boolean, default true
+- is_deleted: Boolean, default false, indexed
+- deleted_at: DateTime
+- created_at: DateTime, default utcnow
+- updated_at: DateTime, default utcnow, on update
+
+Table: sys_audit_log
+- id: Integer, PK
+- category: String(50), not null, indexed
+- action: String(100), not null
+- target_table: String(50)
+- target_id: Integer
+- actor_id: Integer, FK -> setup_user.id
+- actor_ip: String(45)
+- details: JSON
+- notes: Text
+- created_at: DateTime, default utcnow, indexed

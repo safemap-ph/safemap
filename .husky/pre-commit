@@ -1,0 +1,46 @@
+#!/bin/sh
+# ──────────────────────────────────────────────────────────────────────
+# Pre-commit hook: Enforces lint and build before every commit.
+# Prevents broken code from reaching the repository.
+# ──────────────────────────────────────────────────────────────────────
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+FAILED=0
+
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+PROTECTED_BRANCH="submain"
+
+if [ "$CURRENT_BRANCH" = "$PROTECTED_BRANCH" ]; then
+  printf "\n❌ Commit blocked — create a feature branch before committing.\n"
+  printf "   Current branch: %s\n" "$CURRENT_BRANCH"
+  exit 1
+fi
+
+run_step() {
+  LABEL="$1"
+  shift
+  printf "\n▶ %s\n" "$LABEL"
+  if "$@"; then
+    printf "✅ %s passed\n" "$LABEL"
+  else
+    printf "❌ %s failed\n" "$LABEL"
+    FAILED=1
+  fi
+}
+
+# ── 1. Lint ────────────────────────────────────────────────────────────
+run_step "Lint (frontend)" pnpm -C frontend lint
+
+# ── 2. Build (production) ─────────────────────────────────────────────
+run_step "Build (frontend)" pnpm -C frontend build
+
+# ── Result ─────────────────────────────────────────────────────────────
+if [ $FAILED -ne 0 ]; then
+  printf "\n❌ Commit blocked — fix the issues above before committing.\n"
+  exit 1
+fi
+
+printf "\n✅ All checks passed — commit proceeding.\n"
+exit 0
