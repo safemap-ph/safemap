@@ -5,8 +5,9 @@ Handle location-related endpoints
 
 from flask import request, jsonify
 from routes import api_bp
-from models import Location
-from utils import paginate_query
+from models import SetupLocation as Location, SysAuditLog, db
+from utils import paginate_query, require_auth, get_current_user
+from datetime import datetime
 
 @api_bp.route('/locations', methods=['GET'])
 def get_locations():
@@ -16,7 +17,7 @@ def get_locations():
     location_type = request.args.get('type')
     city = request.args.get('city')
     
-    query = Location.query
+    query = Location.query.filter_by(is_deleted=False)
     
     if location_type:
         query = query.filter(Location.location_type == location_type)
@@ -36,7 +37,7 @@ def get_locations():
 @api_bp.route('/locations/<int:location_id>', methods=['GET'])
 def get_location(location_id):
     """Get a single location by ID"""
-    location = Location.query.get_or_404(location_id)
+    location = Location.query.filter_by(id=location_id, is_deleted=False).first_or_404()
     return jsonify(location.to_dict()), 200
 
 
@@ -51,11 +52,10 @@ def get_nearby_locations():
         return jsonify({'error': 'Latitude and longitude are required'}), 400
     
     # Simple bounding box query (not precise, but efficient)
-    # For production, use PostGIS for accurate distance calculations
-    lat_range = radius / 111.0  # 1 degree ≈ 111km
-    lng_range = radius / (111.0 * 0.7)  # Approximate for Philippines
+    lat_range = radius / 111.0
+    lng_range = radius / (111.0 * 0.7)
     
-    locations = Location.query.filter(
+    locations = Location.query.filter_by(is_deleted=False).filter(
         Location.latitude.between(lat - lat_range, lat + lat_range),
         Location.longitude.between(lng - lng_range, lng + lng_range)
     ).all()
@@ -68,8 +68,13 @@ def get_nearby_locations():
 
 
 @api_bp.route('/locations', methods=['POST'])
+@require_auth
 def create_location():
-    """Create a new location"""
+    """Create a new location (admin/moderator only)"""
+    current_user = get_current_user()
+    if current_user.role not in ['admin', 'moderator']:
+        return jsonify({'error': 'Unauthorized'}), 403
+
     data = request.get_json()
     
     location = Location(
@@ -87,7 +92,19 @@ def create_location():
         is_verified=data.get('is_verified', False)
     )
     
-    location.save()
+    db.session.add(location)
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='location_management',
+        action='add_location',
+        target_table='setup_location',
+        target_id=location.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': location.name}
+    )
     
     return jsonify({
         'message': 'Location created successfully',
@@ -96,9 +113,14 @@ def create_location():
 
 
 @api_bp.route('/locations/<int:location_id>', methods=['PUT'])
+@require_auth
 def update_location(location_id):
-    """Update an existing location"""
-    location = Location.query.get_or_404(location_id)
+    """Update an existing location (admin/moderator only)"""
+    current_user = get_current_user()
+    if current_user.role not in ['admin', 'moderator']:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    location = Location.query.filter_by(id=location_id, is_deleted=False).first_or_404()
     data = request.get_json()
     
     for key in ['name', 'latitude', 'longitude', 'location_type', 'address', 
@@ -107,7 +129,18 @@ def update_location(location_id):
         if key in data:
             setattr(location, key, data[key])
     
-    location.save()
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='location_management',
+        action='edit_location',
+        target_table='setup_location',
+        target_id=location.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': location.name}
+    )
     
     return jsonify({
         'message': 'Location updated successfully',
@@ -116,10 +149,30 @@ def update_location(location_id):
 
 
 @api_bp.route('/locations/<int:location_id>', methods=['DELETE'])
+@require_auth
 def delete_location(location_id):
-    """Delete a location"""
-    location = Location.query.get_or_404(location_id)
-    location.delete()
+    """Soft delete a location (admin only)"""
+    current_user = get_current_user()
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+
+    location = Location.query.filter_by(id=location_id, is_deleted=False).first_or_404()
+    
+    # Soft delete
+    location.is_deleted = True
+    location.deleted_at = datetime.utcnow()
+    db.session.commit()
+    
+    # Log the action
+    SysAuditLog.log(
+        category='location_management',
+        action='delete_location',
+        target_table='setup_location',
+        target_id=location.id,
+        actor_id=current_user.id,
+        actor_ip=request.remote_addr,
+        details={'name': location.name}
+    )
     
     return jsonify({'message': 'Location deleted successfully'}), 200
 
@@ -127,13 +180,10 @@ def delete_location(location_id):
 @api_bp.route('/locations/types', methods=['GET'])
 def get_location_types():
     """Get all location types"""
-    from models import db
-    from sqlalchemy import func
-    
     types = db.session.query(
         Location.location_type,
-        func.count(Location.id)
-    ).group_by(Location.location_type).all()
+        db.func.count(Location.id)
+    ).filter(Location.is_deleted == False).group_by(Location.location_type).all()
     
     return jsonify({
         'types': [{'type': t, 'count': c} for t, c in types]

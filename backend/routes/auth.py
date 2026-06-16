@@ -6,7 +6,7 @@ Handle login, logout, and token management
 from flask import request, jsonify
 from datetime import timedelta
 from routes import api_bp
-from models import User
+from models import SetupUser as User, SysAuditLog
 from utils import validate_json, create_token, require_auth, get_current_user
 
 @api_bp.route('/auth/login', methods=['POST'])
@@ -32,6 +32,17 @@ def login():
     # Generate tokens
     access_token = create_token(user.id, 'access')
     refresh_token = create_token(user.id, 'refresh')
+    
+    # Log the login
+    SysAuditLog.log(
+        category='auth',
+        action='login',
+        target_table='setup_user',
+        target_id=user.id,
+        actor_id=user.id,
+        actor_ip=request.remote_addr,
+        details={'username': user.username}
+    )
     
     return jsonify({
         'message': 'Login successful',
@@ -82,8 +93,16 @@ def register():
 @require_auth
 def logout():
     """User logout endpoint"""
-    # In a production system, you might want to blacklist the token
-    # For now, just return success and let client delete tokens
+    current_user = get_current_user()
+    if current_user:
+        SysAuditLog.log(
+            category='auth',
+            action='logout',
+            target_table='setup_user',
+            target_id=current_user.id,
+            actor_id=current_user.id,
+            actor_ip=request.remote_addr
+        )
     return jsonify({'message': 'Logout successful'}), 200
 
 

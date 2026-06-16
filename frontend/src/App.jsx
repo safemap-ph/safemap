@@ -1,91 +1,49 @@
-import { useState } from 'react'
+import React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import MapPage from './pages/MapPage'
+import AboutUsPage from './pages/AboutUsPage'
 import ReportPage from './pages/ReportPage'
-
-// Import modular components
-import Header from './components/Header'
-import MapView from './components/MapView'
-import QuickActions from './components/QuickActions'
-import BottomNav from './components/BottomNav'
-import ChatWidget from './components/ChatWidget'
-import ReportButton from './components/ReportButton'
+import IncidentDetailsPage from './pages/IncidentDetailsPage'
+import LocationDetailsPage from './pages/LocationDetailsPage'
+import ReviewSubmitPage from './pages/ReviewSubmitPage'
+import ReportSuccessPage from './pages/ReportSuccessPage'
+import TrackReportPage from './pages/TrackReportPage'
+import HelpPage from './pages/HelpPage'
+import EmergencyPage from './pages/EmergencyPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminDashboardPage from './pages/admin/dashboard'
+import AdminAnalyticsPage from './pages/admin/analytics'
+import AdminQueuePage from './pages/admin/queue'
+import AdminAuditPage from './pages/admin/audit'
+import AdminSettingsPage from './pages/admin/settings'
+import AdminManagementPage from './pages/admin/management'
 
 function App() {
-  const [currentView, setCurrentView] = useState('map')
-  const [showQuickActions, setShowQuickActions] = useState(true)
-  
-  // Quick Actions drag state
-  const [qaPosition, setQaPosition] = useState({ x: 0, y: 0 })
-  const [isDraggingQA, setIsDraggingQA] = useState(false)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 })
-
-  // Chat state
-  const [isChatOpen, setIsChatOpen] = useState(false)
-
-  // Handlers
-  const handleEmergencyClick = () => {
-    setCurrentView('help')
-  }
-
-  const handleAIChatClick = () => {
-    setIsChatOpen(true)
-  }
-
-  const handleChatOpen = () => {
-    setIsChatOpen(true)
-  }
-
-  const handleHelpClick = () => {
-    setCurrentView('help')
-  }
-
   return (
     <Routes>
-      <Route path="/" element={
-        <div className="h-screen flex flex-col">
-          {/* Header */}
-          <Header />
-
-          {/* Main Content - Map */}
-          <main className="flex-1 relative">
-            <MapView />
-
-            {/* Quick Actions - Draggable */}
-            <QuickActions
-              showQuickActions={showQuickActions}
-              setShowQuickActions={setShowQuickActions}
-              qaPosition={qaPosition}
-              setQaPosition={setQaPosition}
-              isDraggingQA={isDraggingQA}
-              setIsDraggingQA={setIsDraggingQA}
-              dragOffset={dragOffset}
-              setDragOffset={setDragOffset}
-              dragStartPos={dragStartPos}
-              setDragStartPos={setDragStartPos}
-              onEmergencyClick={handleEmergencyClick}
-              onAIChatClick={handleAIChatClick}
-            />
-          </main>
-
-          {/* Report Button - Always on top, outside nav */}
-          {currentView !== 'report' && <ReportButton />}
-
-          {/* Bottom Navigation */}
-          <BottomNav
-            onHelpClick={handleHelpClick}
-            onChatClick={handleChatOpen}
-          />
-
-          {/* Chat Widget */}
-          <ChatWidget
-            isOpen={isChatOpen}
-            onClose={() => setIsChatOpen(false)}
-          />
-        </div>
-      }
-      />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutUsPage />} />
+      <Route path="/map" element={<MapPage />} />
       <Route path="/report" element={<ReportPage />} />
+      <Route path="/incident-details" element={<IncidentDetailsPage />} />
+      <Route path="/location-details" element={<LocationDetailsPage />} />
+      <Route path="/review-submit" element={<ReviewSubmitPage />} />
+      <Route path="/report-success" element={<ReportSuccessPage />} />
+      <Route path="/track" element={<TrackReportPage />} />
+      <Route path="/help" element={<HelpPage />} />
+      <Route path="/emergency" element={<EmergencyPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/admin" element={<AdminLoginPage />} />
+      <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+      <Route path="/admin-analytics" element={<AdminAnalyticsPage />} />
+      <Route path="/admin-queue" element={<AdminQueuePage />} />
+      <Route path="/admin-audit" element={<AdminAuditPage />} />
+      <Route path="/admin-management" element={<AdminManagementPage />} />
+      <Route path="/admin-settings" element={<AdminSettingsPage />} />
     </Routes>
   )
 }
