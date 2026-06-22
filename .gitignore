@@ -10,7 +10,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/  # Removed to allow frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -47,6 +47,16 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend
+frontend/node_modules/
+frontend/.pnp/
+frontend/.pnp.js
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/package-lock.json
+frontend/pnpm-lock.yaml
 
 # Frontend
 node_modules/

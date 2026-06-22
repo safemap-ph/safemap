@@ -1,15 +1,15 @@
 """
-SafeMap-PH Location Model
+SafeMap-PH Setup Location Model
 Safe locations and points of interest
 """
 
 from models import db
 from datetime import datetime
 
-class Location(db.Model):
-    """Location model for safe places and points of interest"""
+class SetupLocation(db.Model):
+    """Setup Location model for safe places and points of interest"""
     
-    __tablename__ = 'locations'
+    __tablename__ = 'setup_location'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
@@ -39,8 +39,12 @@ class Location(db.Model):
     
     # Verification
     is_verified = db.Column(db.Boolean, default=False)
-    verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    verified_by = db.Column(db.Integer, db.ForeignKey('setup_user.id'))
     verified_at = db.Column(db.DateTime)
+    
+    # Soft Delete
+    is_deleted = db.Column(db.Boolean, default=False, index=True)
+    deleted_at = db.Column(db.DateTime)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -62,7 +66,7 @@ class Location(db.Model):
     ]
     
     def __repr__(self):
-        return f'<Location {self.id}: {self.name}>'
+        return f'<SetupLocation {self.id}: {self.name}>'
     
     def to_dict(self):
         """Convert location to dictionary"""
@@ -98,23 +102,3 @@ class Location(db.Model):
         """Delete location from database"""
         db.session.delete(self)
         db.session.commit()
-    
-    @staticmethod
-    def get_by_type(location_type):
-        """Get locations by type"""
-        return Location.query.filter_by(location_type=location_type).all()
-    
-    @staticmethod
-    def get_by_city(city):
-        """Get locations by city"""
-        return Location.query.filter_by(city=city).all()
-    
-    @staticmethod
-    def get_verified():
-        """Get verified locations"""
-        return Location.query.filter_by(is_verified=True).all()
-    
-    @staticmethod
-    def search_by_name(query):
-        """Search locations by name"""
-        return Location.query.filter(Location.name.ilike(f'%{query}%')).all()

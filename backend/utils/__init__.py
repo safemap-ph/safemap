@@ -8,7 +8,7 @@ from flask import request, jsonify, g
 import jwt
 from datetime import datetime, timedelta
 
-from models import User
+from models import SetupUser as User
 from config import Config
 
 
@@ -79,6 +79,32 @@ def require_auth(f):
     return decorated_function
 
 
+def rate_limit(limit_string):
+    """
+    Decorator to apply rate limiting to endpoints
+    
+    Args:
+        limit_string: Rate limit specification (e.g., '10 per minute', '30 per minute')
+    
+    Returns:
+        Decorator function that applies rate limiting
+        Returns 429 Too Many Requests with Retry-After header when limit exceeded
+    """
+    from extensions import limiter
+    
+    def decorator(f):
+        # Apply Flask-Limiter decorator with custom error response
+        limited_func = limiter.limit(limit_string)(f)
+        
+        @wraps(limited_func)
+        def wrapper(*args, **kwargs):
+            return limited_func(*args, **kwargs)
+        
+        return wrapper
+    
+    return decorator
+
+
 def get_current_user():
     """Get current authenticated user"""
     return getattr(g, 'current_user', None)
@@ -141,3 +167,104 @@ def error_response(message, status_code=400, errors=None):
         response['errors'] = errors
     
     return jsonify(response), status_code
+
+
+def log_info(message, **context):
+    """
+    Log informational message with request and user context
+    
+    Args:
+        message: Log message
+        **context: Additional context to include in log
+    """
+    from flask import current_app
+    
+    log_context = _get_log_context()
+    log_context.update(context)
+    
+    current_app.logger.info(f"{message} | {log_context}")
+
+
+def log_warning(message, **context):
+    """
+    Log warning message with request and user context
+    
+    Args:
+        message: Log message
+        **context: Additional context to include in log
+    """
+    from flask import current_app
+    
+    log_context = _get_log_context()
+    log_context.update(context)
+    
+    current_app.logger.warning(f"{message} | {log_context}")
+
+
+def log_error(message, **context):
+    """
+    Log error message with request and user context
+    
+    Args:
+        message: Log message
+        **context: Additional context to include in log
+    """
+    from flask import current_app
+    
+    log_context = _get_log_context()
+    log_context.update(context)
+    
+    current_app.logger.error(f"{message} | {log_context}")
+
+
+def _get_log_context():
+    """
+    Get request and user context for structured logging
+    
+    Returns:
+        dict: Context dictionary with request and user information
+    """
+    context = {}
+    
+    # Add request context if available
+    if request:
+        context['path'] = request.path
+        context['method'] = request.method
+        context['remote_addr'] = request.remote_addr
+        context['user_agent'] = request.headers.get('User-Agent', 'Unknown')
+    
+    # Add user context if available
+    current_user = get_current_user()
+    if current_user:
+        context['user_id'] = current_user.id
+        context['username'] = current_user.username
+        context['role'] = current_user.role
+    else:
+        context['user_id'] = None
+        context['username'] = 'anonymous'
+    
+    return context
+
+
+def sanitize_input(text):
+    """
+    Sanitize user input to prevent injection attacks
+    
+    Args:
+        text: Input string to sanitize
+    
+    Returns:
+        str: Sanitized string with HTML tags stripped, special characters escaped, and whitespace trimmed
+    """
+    import bleach
+    
+    if not text:
+        return text
+    
+    # Strip HTML tags
+    text = bleach.clean(text, tags=[], strip=True)
+    
+    # Trim whitespace
+    text = text.strip()
+    
+    return text

@@ -1,15 +1,15 @@
 """
-SafeMap-PH Help Directory Model
+SafeMap-PH Reference Emergency Directory Model
 Emergency hotlines, contacts, and safety resources
 """
 
 from models import db
 from datetime import datetime
 
-class HelpCategory(db.Model):
-    """Category for help resources"""
+class RefHelpCategory(db.Model):
+    """Reference category for help resources"""
     
-    __tablename__ = 'help_categories'
+    __tablename__ = 'ref_help_category'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
@@ -17,11 +17,16 @@ class HelpCategory(db.Model):
     icon = db.Column(db.String(50))  # Icon name
     display_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
+    
+    # Soft Delete
+    is_deleted = db.Column(db.Boolean, default=False, index=True)
+    deleted_at = db.Column(db.DateTime)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    contacts = db.relationship('HelpContact', backref='category', lazy='dynamic')
+    contacts = db.relationship('RefHelpContact', backref='category', lazy='dynamic')
     
     def to_dict(self):
         return {
@@ -35,13 +40,13 @@ class HelpCategory(db.Model):
         }
 
 
-class HelpContact(db.Model):
-    """Emergency contact information"""
+class RefHelpContact(db.Model):
+    """Reference emergency contact information"""
     
-    __tablename__ = 'help_contacts'
+    __tablename__ = 'ref_help_contact'
     
     id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey('help_categories.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('ref_help_category.id'))
     
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(256))
@@ -62,7 +67,12 @@ class HelpContact(db.Model):
     # Metadata
     is_active = db.Column(db.Boolean, default=True)
     is_verified = db.Column(db.Boolean, default=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Soft Delete
+    is_deleted = db.Column(db.Boolean, default=False, index=True)
+    deleted_at = db.Column(db.DateTime)
+    
+    created_by = db.Column(db.Integer, db.ForeignKey('setup_user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -97,35 +107,3 @@ class HelpContact(db.Model):
             'is_24_7': self.is_24_7,
             'is_verified': self.is_verified
         }
-    
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-    
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
-    @staticmethod
-    def get_all_active():
-        """Get all active contacts"""
-        return HelpContact.query.filter_by(is_active=True).all()
-    
-    @staticmethod
-    def get_by_category(category_name):
-        """Get contacts by category"""
-        return HelpContact.query.join(HelpCategory).filter(
-            HelpCategory.name == category_name,
-            HelpContact.is_active == True
-        ).all()
-    
-    @staticmethod
-    def search(query):
-        """Search contacts by name or description"""
-        return HelpContact.query.filter(
-            HelpContact.is_active == True,
-            db.or_(
-                HelpContact.name.ilike(f'%{query}%'),
-                HelpContact.description.ilike(f'%{query}%')
-            )
-        ).all()

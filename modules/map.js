@@ -47,16 +47,32 @@ export function refreshMap(){
   verifiedLayer.clearLayers();
   if(heatLayer){ map.removeLayer(heatLayer); heatLayer=null; }
 
-  // Heat for approved unverified
+  // Heat for approved unverified - Keep heat for density, but user asked for pins too
   const heatPoints = rows.filter(r=>r.status===STATUS.UNVERIFIED_APPROVED).map(r=>[r.lat, r.lng, 0.5]);
   if(heatPoints.length){
     heatLayer = L.heatLayer(heatPoints, {radius:24, blur:16, maxZoom:17, gradient:{0.2:'#0ea5e9',0.5:'#f59e0b',0.8:'#ef4444'}}).addTo(map);
   }
 
-  // Verified markers
-  rows.filter(r=>r.status===STATUS.VERIFIED).forEach(r=>{
-    const m = L.marker([r.lat, r.lng], {title: r.type});
-    m.bindPopup(`<b>Verified</b><br>${r.type}<br>${r.date}<br/><small>${r.desc||''}</small>`);
+  // Pins for both Approved and Verified reports
+  rows.filter(r=>r.status===STATUS.UNVERIFIED_APPROVED || r.status===STATUS.VERIFIED).forEach(r=>{
+    const isVerified = r.status === STATUS.VERIFIED;
+    const m = L.marker([r.lat, r.lng], {
+      title: r.type,
+      opacity: isVerified ? 1.0 : 0.8 // Slightly faded for unverified
+    });
+    
+    m.bindPopup(`
+      <div class="p-1">
+        <h6 class="mb-1">${r.type}</h6>
+        <div class="mb-1">
+          <span class="badge ${isVerified ? 'bg-primary' : 'bg-warning text-dark'}">
+            ${isVerified ? 'Verified PNP' : 'Community Approved'}
+          </span>
+        </div>
+        <p class="small text-muted mb-0">${r.date}</p>
+        <p class="small mb-0">${r.desc || ''}</p>
+      </div>
+    `);
     verifiedLayer.addLayer(m);
   });
 }

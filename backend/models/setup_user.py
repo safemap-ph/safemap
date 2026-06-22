@@ -1,5 +1,5 @@
 """
-SafeMap-PH User Model
+SafeMap-PH Setup User Model
 User authentication and profile management
 """
 
@@ -8,10 +8,10 @@ from datetime import datetime
 import hashlib
 import secrets
 
-class User(db.Model):
-    """User model for authentication and profile"""
+class SetupUser(db.Model):
+    """System User model for authentication and profile"""
     
-    __tablename__ = 'users'
+    __tablename__ = 'setup_user'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
@@ -25,16 +25,21 @@ class User(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
     
+    # Soft Delete
+    is_deleted = db.Column(db.Boolean, default=False, index=True)
+    deleted_at = db.Column(db.DateTime)
+    
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    reports = db.relationship('Report', backref='creator', lazy='dynamic', foreign_keys='Report.created_by')
+    reports = db.relationship('LedgerReportHeader', backref='creator', lazy='dynamic', foreign_keys='LedgerReportHeader.created_by')
+    actions = db.relationship('LedgerReportEntry', backref='actor', lazy='dynamic', foreign_keys='LedgerReportEntry.actor_id')
     
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<SetupUser {self.username}>'
     
     def set_password(self, password):
         """Hash and set password"""
@@ -94,9 +99,9 @@ class User(db.Model):
     @staticmethod
     def get_by_username(username):
         """Get user by username"""
-        return User.query.filter_by(username=username).first()
+        return SetupUser.query.filter_by(username=username).first()
     
     @staticmethod
     def get_by_email(email):
         """Get user by email"""
-        return User.query.filter_by(email=email).first()
+        return SetupUser.query.filter_by(email=email).first()
